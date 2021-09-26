@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import torch.nn.functional as F
+import torch
 
 from .fpn import FPN
 
@@ -59,6 +60,8 @@ class PAN(FPN):
             norm_cfg,
             activation,
         )
+
+        self.pool = torch.nn.AvgPool2d(2, 2)
         self.init_weights()
 
     def forward(self, inputs):
@@ -74,8 +77,16 @@ class PAN(FPN):
         # build top-down path
         used_backbone_levels = len(laterals)
         for i in range(used_backbone_levels - 1, 0, -1):
+            #_, C, _, _ = laterals[i].shape
+            #tran = torch.nn.ConvTranspose2d(C, C, 4, stride=2, bias=False, groups=C, padding=1)
+            #tran.weight = torch.nn.parameter.Parameter((torch.ones_like(tran.weight) * 0.5).cuda())
+            #laterals[i-1] += tran(laterals[i])
             laterals[i - 1] += F.interpolate(
-                laterals[i], scale_factor=2, mode="bilinear"
+            #    B, C, H, W = laterals[i - 1].shape
+            #    a = torch.nn.ConvTranspose2d(C, C, 4, 4, bias=False)
+            #    laterals[i] = a(laterals[i - 1])
+                laterals[i], scale_factor=2, mode="nearest"
+                #laterals[i], scale_factor=2, mode="bilinear"
             )
 
         # build outputs
@@ -84,9 +95,11 @@ class PAN(FPN):
 
         # part 2: add bottom-up path
         for i in range(0, used_backbone_levels - 1):
-            inter_outs[i + 1] += F.interpolate(
-                inter_outs[i], scale_factor=0.5, mode="bilinear"
-            )
+            inter_outs[i + 1] += self.pool(inter_outs[i])
+        #    inter_outs[i + 1] += F.interpolate(
+        #        inter_outs[i], scale_factor=0.5, mode="nearest",
+        #        recompute_scale_factor=True
+        #    )
 
         outs = []
         outs.append(inter_outs[0])

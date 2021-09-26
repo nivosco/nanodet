@@ -42,9 +42,11 @@ class CocoDataset(BaseDataset):
         """
         self.coco_api = COCO(ann_path)
         self.cat_ids = sorted(self.coco_api.getCatIds())
+        #self.cat_ids = self.coco_api.getCatIds(catNms=['person'])
         self.cat2label = {cat_id: i for i, cat_id in enumerate(self.cat_ids)}
         self.cats = self.coco_api.loadCats(self.cat_ids)
         self.img_ids = sorted(self.coco_api.imgs.keys())
+        #self.img_ids = sorted(self.coco_api.getImgIds(catIds=self.cat_ids))
         img_info = self.coco_api.loadImgs(self.img_ids)
         return img_info
 
@@ -137,12 +139,7 @@ class CocoDataset(BaseDataset):
         if self.use_keypoint:
             meta["gt_keypoints"] = ann["keypoints"]
 
-        input_size = self.input_size
-        if self.multi_scale:
-            input_size = self.get_random_size(self.multi_scale, input_size)
-
-        meta = self.pipeline(self, meta, input_size)
-
+        meta = self.pipeline(meta, self.input_size)
         meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1))
         return meta
 

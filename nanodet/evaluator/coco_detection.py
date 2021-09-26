@@ -15,7 +15,6 @@
 import copy
 import json
 import os
-import warnings
 
 from pycocotools.cocoeval import COCOeval
 
@@ -52,7 +51,10 @@ class CocoDetectionEvaluator:
         json_results = []
         for image_id, dets in results.items():
             for label, bboxes in dets.items():
-                category_id = self.cat_ids[label]
+                try:
+                    category_id = self.cat_ids[label]
+                except:
+                    continue
                 for bbox in bboxes:
                     score = float(bbox[4])
                     detection = dict(
@@ -66,23 +68,13 @@ class CocoDetectionEvaluator:
 
     def evaluate(self, results, save_dir, rank=-1):
         results_json = self.results2json(results)
-        if len(results_json) == 0:
-            warnings.warn(
-                "Detection result is empty! Please check whether "
-                "training set is too small (need to increase val_interval "
-                "in config and train more epochs). Or check annotation "
-                "correctness."
-            )
-            empty_eval_results = {}
-            for key in self.metric_names:
-                empty_eval_results[key] = 0
-            return empty_eval_results
         json_path = os.path.join(save_dir, "results{}.json".format(rank))
         json.dump(results_json, open(json_path, "w"))
         coco_dets = self.coco_api.loadRes(json_path)
         coco_eval = COCOeval(
             copy.deepcopy(self.coco_api), copy.deepcopy(coco_dets), "bbox"
         )
+        #coco_eval.params.catIds = [1]
         coco_eval.evaluate()
         coco_eval.accumulate()
         coco_eval.summarize()

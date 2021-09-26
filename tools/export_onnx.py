@@ -51,10 +51,10 @@ def main(config, model_path, output_path, input_shape=(320, 320)):
         model,
         dummy_input,
         output_path,
-        verbose=True,
-        keep_initializers_as_inputs=True,
+        #verbose=True,
+        #keep_initializers_as_inputs=True,
         opset_version=11,
-        output_names=output_names,
+        #output_names=output_names,
     )
     logger.log("finished exporting onnx ")
 

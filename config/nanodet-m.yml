@@ -1,5 +1,5 @@
 #Config File example
-save_dir: workspace/nanodet_m
+save_dir: ./nanodet_m_person_crowdhuman
 model:
   arch:
     name: OneStageDetector
@@ -42,8 +42,8 @@ model:
 data:
   train:
     name: CocoDataset
-    img_path: coco/train2017
-    ann_path: coco/annotations/instances_train2017.json
+    img_path: /data/data/coco_person/train2017
+    ann_path: /data/data/coco_person/annotations/instances_train2017.json
     input_size: [320,320] #[w,h]
     keep_ratio: True
     pipeline:
@@ -60,8 +60,8 @@ data:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
     name: CocoDataset
-    img_path: coco/val2017
-    ann_path: coco/annotations/instances_val2017.json
+    img_path: /data/data/coco_person/val2017
+    ann_path: /data/data/coco_person/annotations/instances_val2017.json
     input_size: [320,320] #[w,h]
     keep_ratio: True
     pipeline:
@@ -69,13 +69,12 @@ data:
 device:
   gpu_ids: [0]
   workers_per_gpu: 8
-  batchsize_per_gpu: 192
+  batchsize_per_gpu: 150
 schedule:
-#  resume:
-#  load_model: YOUR_MODEL_PATH
+  load_model: /work/users/nivv/repos/nanodet/nanodet_m/model_best/model_best.ckpt
   optimizer:
     name: SGD
-    lr: 0.14
+    lr: 0.109
     momentum: 0.9
     weight_decay: 0.0001
   warmup:

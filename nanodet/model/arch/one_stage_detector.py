@@ -55,7 +55,7 @@ class OneStageDetector(nn.Module):
             results = self.head.post_process(preds, meta)
             torch.cuda.synchronize()
             print("decode time: {:.3f}s".format((time.time() - time2)), end=" | ")
-        return results
+        return results, preds
 
     def forward_train(self, gt_meta):
         preds = self(gt_meta["img"])
